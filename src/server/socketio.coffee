@@ -241,6 +241,12 @@ exports.attach = (server, createClient, options) ->
 
         callback()
 
+    getOps = (doc, start, end, callback) ->
+      client.getOps doc, start, end, callback
+
+    undo = (doc, callback) ->
+      client.undoOp doc, callback
+
     # We received an op from the socket
     handleOp = (query, callback) ->
       throw new Error 'No docName specified' unless query.doc?
@@ -282,6 +288,12 @@ exports.attach = (server, createClient, options) ->
 
         else if query.op? # The socket is applying an op.
           handleOp query, callback
+
+        else if query.getOps?
+          getOps query.doc, 0, 10, callback
+
+        else if query.undo?
+          undo query.doc, callback
 
         else
           util.debug "Unknown message received: #{util.inspect query}"

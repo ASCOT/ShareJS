@@ -44,6 +44,7 @@ module.exports = (model, options) ->
         when 'create' then 'create'
         when 'get snapshot', 'get ops', 'open' then 'read'
         when 'submit op' then 'update'
+        when 'undo op' then 'update'
         when 'delete' then 'delete'
         else throw new Error "Invalid action name #{name}"
 
@@ -84,6 +85,10 @@ module.exports = (model, options) ->
 
       @doAuth {docName, op:opData.op, v:opData.v, meta:opData.meta}, 'submit op', callback, =>
         model.applyOp docName, opData, callback
+
+    undoOp: (docName, callback) ->
+       @doAuth {docName}, 'undo op', callback, ->
+        model.undoOp docName, callback
 
     # Delete the named operation.
     # Callback is passed (deleted?, error message)

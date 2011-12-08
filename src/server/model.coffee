@@ -459,7 +459,7 @@ module.exports = Model = (db, options) ->
 
     options.stats?.cacheMiss 'getOps'
 
-    getOpsInternal docName, start, end, callback
+    getOpsInternal docName, start, end, callback    
 
   # Gets the snapshot data for the specified document.
   # getSnapshot(docName, callback)
@@ -486,6 +486,23 @@ module.exports = Model = (db, options) ->
     load docName, (error, doc) -> process.nextTick -> doc.opQueue opData, (error, newVersion) ->
       refreshReapingTimeout docName
       callback? error, newVersion
+  
+  @undoOp = (docName, callback) ->
+    doc = docs[docName]
+    ops = doc?.ops
+    if ops.length > 1
+      opData = doc.type.clone ops[ops.length-1] # ops.pop()
+      opData.op = (doc.type.invert opData.op)[0]
+      opData.op = [opData.op]
+      opData.v++;      
+      delete opData.meta.source
+      load docName, (error, doc) -> process.nextTick -> doc.opQueue opData, (error, newVersion) ->
+        refreshReapingTimeout docName
+        if !error
+          ops.pop() 
+          oldOp = ops.pop()
+          ops[ops.length-1].v = oldOp.v
+        callback? error, newVersion
 
   # Not yet implemented.
   @applyMetaOp = (docName, metaOpData, callback) ->

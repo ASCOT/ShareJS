@@ -40,9 +40,9 @@ json.checkObj = (elem) ->
 
 json.apply = (snapshot, op) ->
   json.checkValidOp op
-  op = clone op
+  op = json.clone op
 
-  container = {data: clone snapshot}
+  container = {data: json.clone snapshot}
 
   try
     for c, i in op
@@ -131,7 +131,7 @@ json.pathMatches = (p1, p2, ignoreLast) ->
   true
 
 json.append = (dest, c) ->
-  c = clone c
+  c = json.clone c
   if dest.length != 0 and json.pathMatches c.p, (last = dest[dest.length - 1]).p
     if last.na != undefined and c.na != undefined
       dest[dest.length - 1] = { p: last.p, na: last.na + c.na }
@@ -156,7 +156,7 @@ json.compose = (op1, op2) ->
   json.checkValidOp op1
   json.checkValidOp op2
 
-  newOp = clone op1
+  newOp = json.clone op1
   json.append newOp, c for c in op2
 
   newOp
@@ -173,7 +173,7 @@ json.normalize = (op) ->
   newOp
 
 # hax, copied from test/types/json
-clone = (o) -> JSON.parse(JSON.stringify o)
+json.clone = (o) -> JSON.parse(JSON.stringify o)
 
 json.commonPath = (p1, p2) ->
   p1 = p1.slice()
@@ -192,7 +192,7 @@ json.commonPath = (p1, p2) ->
 
 # transform c so it applies to a document with otherC applied.
 json.transformComponent = (dest, c, otherC, type) ->
-  c = clone c
+  c = json.clone c
   c.p.push(0) if c.na != undefined
   otherC.p.push(0) if otherC.na != undefined
 
@@ -208,26 +208,26 @@ json.transformComponent = (dest, c, otherC, type) ->
   if otherC.na
     if common2? && otherCplength >= cplength && otherC.p[common2] == c.p[common2]
       if c.ld != undefined
-        oc = clone otherC
+        oc = json.clone otherC
         oc.p = oc.p[cplength..]
-        c.ld = json.apply clone(c.ld), [oc]
+        c.ld = json.apply json.clone(c.ld), [oc]
       else if c.od != undefined
-        oc = clone otherC
+        oc = json.clone otherC
         oc.p = oc.p[cplength..]
-        c.od = json.apply clone(c.od), [oc]
+        c.od = json.apply json.clone(c.od), [oc]
     json.append dest, c
     return dest
 
   if common2? && otherCplength > cplength && c.p[common2] == otherC.p[common2]
     # transform based on c
     if c.ld != undefined
-      oc = clone otherC
+      oc = json.clone otherC
       oc.p = oc.p[cplength..]
-      c.ld = json.apply clone(c.ld), [oc]
+      c.ld = json.apply json.clone(c.ld), [oc]
     else if c.od != undefined
-      oc = clone otherC
+      oc = json.clone otherC
       oc.p = oc.p[cplength..]
-      c.od = json.apply clone(c.od), [oc]
+      c.od = json.apply json.clone(c.od), [oc]
 
 
   if common?
@@ -272,7 +272,7 @@ json.transformComponent = (dest, c, otherC, type) ->
           if c.li != undefined and type == 'left'
             # we're both replacing one element with another. only one can
             # survive!
-            c.ld = clone otherC.li
+            c.ld = json.clone otherC.li
           else
             return dest
     else if otherC.li != undefined

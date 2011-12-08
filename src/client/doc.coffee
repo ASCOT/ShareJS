@@ -150,6 +150,18 @@ Doc = (connection, @name, @version, @type, @snapshot) ->
     # A timeout is used so if the user sends multiple ops at the same time, they'll be composed
     # together and sent together.
     setTimeout @flush, 0
+
+
+  @undo = (callback) ->
+    connection.send {'doc' : @name, undo : true}, =>
+      callback?()
+      return
+
+  # Request the operations applied on the document
+  @getOps = (callback) ->
+    connection.send {'doc' : @name, getOps : true}, =>
+      callback?()
+      return
   
   # Close a document.
   # No unit tests for this so far.
