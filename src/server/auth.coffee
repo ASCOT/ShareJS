@@ -45,6 +45,7 @@ module.exports = (model, options) ->
         when 'get snapshot', 'get ops', 'open' then 'read'
         when 'submit op' then 'update'
         when 'undo op' then 'update'
+        when 'redo op' then 'update'
         when 'delete' then 'delete'
         else throw new Error "Invalid action name #{name}"
 
@@ -89,6 +90,10 @@ module.exports = (model, options) ->
     undoOp: (docName, callback) ->
        @doAuth {docName}, 'undo op', callback, ->
         model.undoOp docName, callback
+
+    redoOp: (docName, callback) ->
+       @doAuth {docName}, 'redo op', callback, ->
+        model.redoOp docName, callback
 
     # Delete the named operation.
     # Callback is passed (deleted?, error message)

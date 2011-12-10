@@ -184,7 +184,7 @@ module.exports = Model = (db, options) ->
   # exist in the doc set.
   #
   # Returns the new doc.
-  add = (docName, error, data, committedVersion, ops, dbMeta) ->
+  add = (docName, error, data, committedVersion, ops, undoOps, dbMeta) ->
     callbacks = awaitingGetSnapshot[docName]
     delete awaitingGetSnapshot[docName]
 
@@ -199,6 +199,9 @@ module.exports = Model = (db, options) ->
 
         # Cache of ops
         ops: ops or []
+
+        # Cache of undo ops
+        undoOps: undoOps or []
 
         eventEmitter: new EventEmitter
 
@@ -286,7 +289,7 @@ module.exports = Model = (db, options) ->
                 console.error "Op data invalid for #{docName}: #{e.stack}"
                 return callback 'Op data invalid'
 
-            add docName, error, data, committedVersion, ops, dbMeta
+            add docName, error, data, committedVersion, ops, [], dbMeta
 
   # This makes sure the cache contains a document. If the doc cache doesn't contain
   # a document, it is loaded from the database and stored.
@@ -459,7 +462,7 @@ module.exports = Model = (db, options) ->
 
     options.stats?.cacheMiss 'getOps'
 
-    getOpsInternal docName, start, end, callback    
+    getOpsInternal docName, start, end, callback
 
   # Gets the snapshot data for the specified document.
   # getSnapshot(docName, callback)
@@ -490,6 +493,7 @@ module.exports = Model = (db, options) ->
   @undoOp = (docName, callback) ->
     doc = docs[docName]
     ops = doc?.ops
+    undoOps = doc?.undoOps
     if ops.length > 1
       opData = doc.type.clone ops[ops.length-1] # ops.pop()
       opData.op = (doc.type.invert opData.op)[0]
@@ -501,8 +505,22 @@ module.exports = Model = (db, options) ->
         if !error
           ops.pop() 
           oldOp = ops.pop()
+          undoOps.push oldOp
           ops[ops.length-1].v = oldOp.v
         callback? error, newVersion
+
+  @redoOp = (docName, callback) ->
+    doc = docs[docName]
+    ops = doc?.ops
+    undoOps = doc?.undoOps
+    if undoOps.length > 0
+      opData = undoOps.pop()
+      #opData.op = doc.type.invert opData.op
+      delete opData.meta.source
+      opData.v = doc.v
+    load docName, (error, doc) -> process.nextTick -> doc.opQueue opData, (error, newVersion) ->
+        refreshReapingTimeout docName
+        callback? error, newVersion  
 
   # Not yet implemented.
   @applyMetaOp = (docName, metaOpData, callback) ->

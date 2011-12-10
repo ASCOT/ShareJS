@@ -7,7 +7,7 @@
 var WEB = true;
 ;
 
-  var SubDoc, clone, depath, exports, isArray, json, pathEquals, text, traverse;
+  var SubDoc, depath, exports, isArray, json, pathEquals, text, traverse;
   var __slice = Array.prototype.slice;
 
   exports = window['sharejs'];
@@ -75,9 +75,9 @@ var WEB = true;
   json.apply = function(snapshot, op) {
     var c, container, e, elem, i, key, p, parent, parentkey, _i, _len, _len2, _ref;
     json.checkValidOp(op);
-    op = clone(op);
+    op = json.clone(op);
     container = {
-      data: clone(snapshot)
+      data: json.clone(snapshot)
     };
     try {
       for (i = 0, _len = op.length; i < _len; i++) {
@@ -157,7 +157,7 @@ var WEB = true;
 
   json.append = function(dest, c) {
     var last;
-    c = clone(c);
+    c = json.clone(c);
     if (dest.length !== 0 && json.pathMatches(c.p, (last = dest[dest.length - 1]).p)) {
       if (last.na !== void 0 && c.na !== void 0) {
         return dest[dest.length - 1] = {
@@ -186,7 +186,7 @@ var WEB = true;
     var c, newOp, _i, _len;
     json.checkValidOp(op1);
     json.checkValidOp(op2);
-    newOp = clone(op1);
+    newOp = json.clone(op1);
     for (_i = 0, _len = op2.length; _i < _len; _i++) {
       c = op2[_i];
       json.append(newOp, c);
@@ -206,7 +206,7 @@ var WEB = true;
     return newOp;
   };
 
-  clone = function(o) {
+  json.clone = function(o) {
     return JSON.parse(JSON.stringify(o));
   };
 
@@ -228,7 +228,7 @@ var WEB = true;
 
   json.transformComponent = function(dest, c, otherC, type) {
     var common, common2, commonOperand, convert, cplength, from, jc, oc, otherCplength, otherFrom, otherTo, p, res, tc, tc1, tc2, to, _i, _len;
-    c = clone(c);
+    c = json.clone(c);
     if (c.na !== void 0) c.p.push(0);
     if (otherC.na !== void 0) otherC.p.push(0);
     common = json.commonPath(c.p, otherC.p);
@@ -240,13 +240,13 @@ var WEB = true;
     if (otherC.na) {
       if ((common2 != null) && otherCplength >= cplength && otherC.p[common2] === c.p[common2]) {
         if (c.ld !== void 0) {
-          oc = clone(otherC);
+          oc = json.clone(otherC);
           oc.p = oc.p.slice(cplength);
-          c.ld = json.apply(clone(c.ld), [oc]);
+          c.ld = json.apply(json.clone(c.ld), [oc]);
         } else if (c.od !== void 0) {
-          oc = clone(otherC);
+          oc = json.clone(otherC);
           oc.p = oc.p.slice(cplength);
-          c.od = json.apply(clone(c.od), [oc]);
+          c.od = json.apply(json.clone(c.od), [oc]);
         }
       }
       json.append(dest, c);
@@ -254,13 +254,13 @@ var WEB = true;
     }
     if ((common2 != null) && otherCplength > cplength && c.p[common2] === otherC.p[common2]) {
       if (c.ld !== void 0) {
-        oc = clone(otherC);
+        oc = json.clone(otherC);
         oc.p = oc.p.slice(cplength);
-        c.ld = json.apply(clone(c.ld), [oc]);
+        c.ld = json.apply(json.clone(c.ld), [oc]);
       } else if (c.od !== void 0) {
-        oc = clone(otherC);
+        oc = json.clone(otherC);
         oc.p = oc.p.slice(cplength);
-        c.od = json.apply(clone(c.od), [oc]);
+        c.od = json.apply(json.clone(c.od), [oc]);
       }
     }
     if (common != null) {
@@ -302,7 +302,7 @@ var WEB = true;
             return dest;
           } else if (c.ld !== void 0) {
             if (c.li !== void 0 && type === 'left') {
-              c.ld = clone(otherC.li);
+              c.ld = json.clone(otherC.li);
             } else {
               return dest;
             }

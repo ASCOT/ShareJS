@@ -533,6 +533,15 @@
         if (typeof callback === "function") callback();
       });
     };
+    this.redo = function(callback) {
+      var _this = this;
+      return connection.send({
+        'doc': this.name,
+        redo: true
+      }, function() {
+        if (typeof callback === "function") callback();
+      });
+    };
     this.getOps = function(callback) {
       var _this = this;
       return connection.send({

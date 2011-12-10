@@ -157,6 +157,11 @@ Doc = (connection, @name, @version, @type, @snapshot) ->
       callback?()
       return
 
+  @redo = (callback) ->
+    connection.send {'doc' : @name, redo : true}, =>
+      callback?()
+      return
+
   # Request the operations applied on the document
   @getOps = (callback) ->
     connection.send {'doc' : @name, getOps : true}, =>
