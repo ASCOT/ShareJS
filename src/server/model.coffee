@@ -187,7 +187,6 @@ module.exports = Model = (db, options) ->
   add = (docName, error, data, committedVersion, ops, undoOps, dbMeta) ->
     callbacks = awaitingGetSnapshot[docName]
     delete awaitingGetSnapshot[docName]
-
     if error
       callback error for callback in callbacks if callbacks
     else
@@ -375,7 +374,7 @@ module.exports = Model = (db, options) ->
     return callback? 'Document already exists' if docs[docName]
 
     data =
-      snapshot:type.create()
+      snapshot: meta.snapshot || type.create()
       type:type.name
       meta:meta or {}
       v:0

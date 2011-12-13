@@ -58,6 +58,9 @@ pump = (req, callback) ->
 # more libraries pulled in.
 # https://github.com/senchalabs/connect/issues/262
 router = (app, createClient, options) ->
+  path = '/doc/:name'
+  if options
+    path = options.path || path
   auth = (req, res, next) ->
     data =
       headers: req.headers
@@ -72,7 +75,7 @@ router = (app, createClient, options) ->
 
   # GET returns the document snapshot. The version and type are sent as headers.
   # I'm not sure what to do with document metadata - it is inaccessable for now.
-  app.get '/doc/:name', auth, (req, res) ->
+  app.get path, auth, (req, res) ->
     req._client.getSnapshot req.params.name, (error, doc) ->
       if doc
         res.setHeader 'X-OT-Type', doc.type.name
@@ -85,7 +88,7 @@ router = (app, createClient, options) ->
         sendError res, error
   
   # Put is used to create a document. The contents are a JSON object with {type:TYPENAME, meta:{...}}
-  app.put '/doc/:name', auth, (req, res) ->
+  app.put path, auth, (req, res) ->
     expectJSONObject req, res, (obj) ->
       type = obj?.type
       meta = obj?.meta
@@ -100,7 +103,7 @@ router = (app, createClient, options) ->
             send200 res
 
   # POST submits an op to the document.
-  app.post '/doc/:name', auth, (req, res) ->
+  app.post path, auth, (req, res) ->
     query = url.parse(req.url, true).query
 
     version = if query?.v?
@@ -119,7 +122,7 @@ router = (app, createClient, options) ->
           else
             sendJSON res, {v:newVersion}
 
-  app.delete '/doc/:name', auth, (req, res) ->
+  app.delete path, auth, (req, res) ->
     req._client.delete req.params.name, (error) ->
       if error
         sendError res, error
