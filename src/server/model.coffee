@@ -517,7 +517,7 @@ module.exports = Model = (db, options) ->
       #opData.op = doc.type.invert opData.op
       delete opData.meta.source
       opData.v = doc.v
-    load docName, (error, doc) -> process.nextTick -> doc.opQueue opData, (error, newVersion) ->
+      load docName, (error, doc) -> process.nextTick -> doc.opQueue opData, (error, newVersion) ->
         refreshReapingTimeout docName
         callback? error, newVersion  
 
